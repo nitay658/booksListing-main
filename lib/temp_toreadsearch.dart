@@ -150,24 +150,27 @@ class _SecondPageState extends State<SecondPage> {
           ),
         ],
       ),
-      child: Stack(
+      child: Column(children: <Widget>[Stack(
         alignment: Alignment.bottomLeft,
         children: [
-          const SizedBox(height: 40.0),
+          //const SizedBox(height: 40.0),
           if (!_localResultsEmpty) _buildMyListContainer()
           else _buildDataBaseContainer(),
           _buildAddBookButton(),
         ],
-      ),
+      )],),
     );
   }
 
   Widget _buildDataBaseContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 250.0,
-      decoration: const BoxDecoration(
+      height: MediaQuery.of(context).size.height - 280,
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF21BFBD),
+          style: BorderStyle.solid,
+          width: 1.0,),
         color: Colors.grey,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(75.0)),
       ),
       child: StreamBuilder<List<Book>>(
         stream: _databaseSearchController.stream,
@@ -181,10 +184,12 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildMyListContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 250.0,
-      decoration: const BoxDecoration(
+      height: MediaQuery.of(context).size.height - 280.0,
+      decoration: BoxDecoration(border: Border.all(color: const Color(0xFF21BFBD),
+        style: BorderStyle.solid,
+        width: 1.0,),
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(75.0)),
       ),
       child: StreamBuilder<List<Book>>(
         stream: _searchController.stream,

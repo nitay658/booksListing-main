@@ -182,15 +182,6 @@ class DatabaseService {
         String bookImage = database[i][6].toString();
         String genres = database[i][5].toString();
         int numPages = database[i][10];
-        // print('ISBN: $isbn');
-        // print('Title: $title');
-        // print('Description: $description');
-        // print('Authors: $authors');
-        // print('Average Rating: $averageRating');
-        // print('Publication Date: $publication_date');
-        // print('Book Image: $bookImage');
-        // print('Genres: $genres');
-        // print('numPages: $numPages');
         print("i:   $i");
         if(isbn != "" && title != "" && description != "" && authors != "" && averageRating != 0.0 && bookImage != "" && genres != "" && publication_date != -1 && bookImage != "") {
           Book book = Book(
@@ -211,31 +202,6 @@ class DatabaseService {
       flag = false;
     }
   }
-
-
-
-  // final String isbn; // Add the ISBN field if it's part of your data
-  // final String title;
-  // final String description;
-  // final String authors;
-  // final double averageRating;
-  // final int numPages;
-  // final List<String> genres;
-  // final int publication_date;
-  // final String bookImage;
-  // final String url;
-  // Book({
-  //   required this.isbn,
-  //   required this.title,
-  //   required this.description,
-  //   required this.authors,
-  //   required this.averageRating,
-  //   required this.numPages,
-  //   required this.publication_date,
-  //   required this.bookImage,
-  //   required this.genres,
-  //   required this.url
-  // });
 
 
   Future<Function> crossover_int(List<List<dynamic>> BX_Books) async {
