@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "789527738796",
+    "project_id": "the-book-list-18073",
+    "storage_bucket": "the-book-list-18073.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:789527738796:android:0191e5d0c6e5a3389fa209",
+        "android_client_info": {
+          "package_name": "com.example.books_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD355fXZTSyeWk-l7TdPrlbvwyY1sAG0cI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
