@@ -17,24 +17,23 @@ class SecondPage extends StatefulWidget {
 
 class _SecondPageState extends State<SecondPage> {
   List<Book> _booksToRead = [];
-  final List<Book> _allBooks = [];
+  late final List<Book> _allBooks = [];
   List<Book> searchResults = [];
-  late StreamController<List<Book>> _searchController =
-  BehaviorSubject<List<Book>>.seeded([]);
-  late StreamController<List<Book>> _databaseSearchController =
-  BehaviorSubject<List<Book>>.seeded([]);
-  late bool _localResultsEmpty = true;
-  final TextEditingController _textEditingController =
-  TextEditingController();
+  late StreamController<List<Book>> _searchController;
+  late StreamController<List<Book>> _databaseSearchController;
+  late bool _localResultsEmpty;
+
+  final TextEditingController _textEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchController = BehaviorSubject<List<Book>>.seeded([]);
+    _databaseSearchController = BehaviorSubject<List<Book>>.seeded([]);
+    _getToReadBooks();
+    _localResultsEmpty = false;
     _textEditingController.addListener(_onSearchTextChanged);
-    _getToReadBooks(); // Call the method to fetch books
   }
-
-
 
   @override
   void dispose() {
@@ -51,17 +50,20 @@ class _SecondPageState extends State<SecondPage> {
     List<Book> localResults = _booksToRead
         .where((book) => book.title.toLowerCase().contains(searchText))
         .toList();
+
     if (localResults.isEmpty) {
       // Fetch results from the database based on the search text
       List<Book> filteredDatabaseBooks = _allBooks
           .where((book) => book.title.toLowerCase().contains(searchText))
           .toList();
+      _localResultsEmpty = true;
       setState(() {
         searchResults = List.from(filteredDatabaseBooks);
         _databaseSearchController.add(searchResults);
       });
     } else {
       // Use local results if available
+      _localResultsEmpty = false;
       setState(() {
         searchResults = List.from(localResults);
         _searchController.add(searchResults);
@@ -70,24 +72,18 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   _getToReadBooks() async {
-    var lst =
-    DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
-    var allBooksList =
-    DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
-
-    // Listen for changes in the allbookslst stream
-    allBooksList.listen((List<Book> run) {
-      setState(() {
-        _allBooks.addAll(run);
-      });
+    var lst = DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
+    var allbookslst = DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
+    allbookslst.listen((List<Book> run) { setState(() {
+      _allBooks.addAll(run);
     });
-
-    // Listen for changes in the lst stream
+    });
     lst.listen((List<Book> run) {
       setState(() {
-        _booksToRead = run; // Update _booksToRead directly
-        _localResultsEmpty = _booksToRead.isEmpty; // Update _localResultsEmpty
-        _onSearchTextChanged(); // Update search results
+        _booksToRead = [];
+        _booksToRead.addAll(run);
+        searchResults = List.from(_booksToRead);
+        _searchController.add(searchResults);
       });
     });
   }
@@ -96,72 +92,54 @@ class _SecondPageState extends State<SecondPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF21BFBD),
-      appBar: CupertinoNavigationBar(
-        middle: CupertinoSearchTextField(
-          backgroundColor: Colors.white,
-          controller: _textEditingController,
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 25.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 40.0),
-                child: Row(
-                  children: <Widget>[
-                    const Text(
-                      'Your',
-                      style: TextStyle(
+      body: ListView(
+        children: <Widget>[
+          const SizedBox(height: 25.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 40.0),
+            child: Row(
+              children: <Widget>[
+                Text('Your',
+                    style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 25.0,
-                      ),
-                    ),
-                    const SizedBox(width: 10.0),
-                    const Text(
-                      'Favourites Books',
-                      style: TextStyle(
+                        fontSize: 25.0)),
+                SizedBox(width: 10.0),
+                Text('Favourites Books',
+                    style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
-                        fontSize: 25.0,
-                      ),
-                    ),
-                    const SizedBox(width: 20.0),
-                    FloatingActionButton(onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddBookPage(
-                            userEmail: widget.userEmail,
-                          ),
-                        ),
-                      );
-                    },
-                      backgroundColor: Colors.cyan,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.bookmark_add),
-                    )
-                  ],
-                ),
-              ),
-              _buildBookList(),
-            ],
+                        fontSize: 25.0))
+              ],
+            ),
           ),
-        ),
+          AppBar(
+            backgroundColor: const Color(0xFF21BFBD),
+            title: CupertinoSearchTextField(
+              backgroundColor: Colors.white,
+              controller: _textEditingController,
+              onChanged: (text) => _onSearchTextChanged(),
+            ),
+            titleTextStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            centerTitle: true,
+            elevation: 0,
+          ),
+          _buildBookList(),
+        ],
       ),
     );
   }
-
 
   Widget _buildBookList() {
     return Container(
       margin: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF21BFBD),
         borderRadius: BorderRadius.circular(15.0),
         boxShadow: [
           BoxShadow(
@@ -175,9 +153,10 @@ class _SecondPageState extends State<SecondPage> {
       child: Stack(
         alignment: Alignment.bottomLeft,
         children: [
-          //const SizedBox(height: 40.0),
+          const SizedBox(height: 40.0),
           if (!_localResultsEmpty) _buildMyListContainer()
           else _buildDataBaseContainer(),
+          _buildAddBookButton(),
         ],
       ),
     );
@@ -185,9 +164,9 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildDataBaseContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 185.0,
+      height: MediaQuery.of(context).size.height - 250.0,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
       ),
       child: StreamBuilder<List<Book>>(
@@ -202,7 +181,7 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildMyListContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 185.0,
+      height: MediaQuery.of(context).size.height - 250.0,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
@@ -338,6 +317,7 @@ class _SecondPageState extends State<SecondPage> {
     // Implement the logic to add the book to the user's personal list
     // You can call DatabaseServer.addUserBook(book) or any other relevant method
     DatabaseService.getInstance(userEmail: widget.userEmail).addUserBook(book);
+
     // Optionally, you can update the local state to reflect the change
     setState(() {
       _booksToRead.add(book);
@@ -350,6 +330,40 @@ class _SecondPageState extends State<SecondPage> {
       _booksToRead.remove(book);
       DatabaseService.getInstance(userEmail: widget.userEmail).removeUserBook(book);
     });
+  }
+
+  Widget _buildAddBookButton() {
+    return Positioned(
+      bottom: 16.0,
+      left: 16.0,
+      child: InkWell(
+        onTap: () {
+          _navigateToAddBookPage();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10.0),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.blue,
+          ),
+          child: const Icon(
+            Icons.book_online,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAddBookPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddBookPage(
+          userEmail: widget.userEmail,
+        ),
+      ),
+    );
   }
 
   void _showBookDescriptionDialog(Book book) {
@@ -382,7 +396,7 @@ class _SecondPageState extends State<SecondPage> {
     } else {
       return Image.asset(
         "assets/images/placeholder_image.jpg",
-      ); // Replace with your placeholder image asset
+      );
     }
   }
 
