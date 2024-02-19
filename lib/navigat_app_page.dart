@@ -22,8 +22,7 @@ class _NavigatAppPageState extends State<NavigatAppPage> {
   void initState() {
     userEmail = widget.userEmail;
     databaseService = DatabaseService.getInstance(userEmail: userEmail);
-    //databaseService.insertBooks();
-    //databaseService.insertBooks('assets/goodreads_data - goodreads_data.csv.csv');
+    databaseService.insertBooks();
     _pages = [
       FirstPage(userEmail: userEmail),
       SecondPage(userEmail: userEmail),

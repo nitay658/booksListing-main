@@ -2,6 +2,13 @@ import 'dart:math';
 
 import 'book_database.dart';
 
+class Pair<T, U> {
+  final T first;
+  final U second;
+
+  Pair(this.first, this.second);
+}
+
 class KnnClassifier {
   late List<Book> _trainingData;
   final double weightAverageRating = 1.0;
@@ -14,17 +21,18 @@ class KnnClassifier {
 
   KnnClassifier();
 
-  List<Book> classifyList(List<Book> trainingData, List<Book> books, int k) {
+  List<Pair<Book, Book>> classifyList(List<Book> trainingData, List<Book> books, int k) {
     _trainingData = trainingData;
-    List<Book> classifications = [];
+    List<Pair<Book, Book>> classifications = [];
 
     for (var book in books) {
-      Book classification = classify(book, k);
-      classifications.add(classification);
+      Book classification = classify(book, k); // Assuming this function returns the recommended book
+      classifications.add(Pair(classification,book));
     }
 
     return classifications;
   }
+
 
   Book classify(Book data, int k) {
     final List<Map<String, dynamic>> distances = [];

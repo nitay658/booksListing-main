@@ -14,7 +14,7 @@ class _ThirdPageState extends State<ThirdPage> {
   late DatabaseService databaseService;
   List<Book> _booksToRead = [];
   List<Book> _allBooks = [];
-  List<Book> _recommendedBooks = [];
+  List<Pair<Book, Book>> _recommendedBooks = [];
   bool _mounted = false;
 
   @override
@@ -95,7 +95,8 @@ class _ThirdPageState extends State<ThirdPage> {
                           return ListView.builder(
                             itemCount: _recommendedBooks.length,
                             itemBuilder: (context, index) {
-                              Book book = _recommendedBooks[index];
+                              Book book = _recommendedBooks[index].first;
+                              String based_recommendtion = _recommendedBooks[index].second.title;
                               return Card(
                                 elevation: 3,
                                 margin: const EdgeInsets.symmetric(vertical: 7),
@@ -129,7 +130,14 @@ class _ThirdPageState extends State<ThirdPage> {
                                           fontWeight: FontWeight.normal,
                                           color: Colors.grey,
                                         ),
-                                      ),
+                                      ),Text(
+                                        'based on the book: $based_recommendtion',
+                                        style: const TextStyle(
+                                          fontSize: 10.0,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
                                     ],
                                   ),
                                 ),
@@ -180,7 +188,7 @@ class _ThirdPageState extends State<ThirdPage> {
     });
   }
 
-  List<Book> classifyAndRecommend() {
+  List<Pair<Book, Book>> classifyAndRecommend() {
     KnnClassifier knnClassifier = KnnClassifier();
     return knnClassifier.classifyList(_allBooks, _booksToRead, 5);
   }

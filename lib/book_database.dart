@@ -172,12 +172,12 @@ class DatabaseService {
 
       int rowsToShow = database.length;
       print("rowsToShow: $rowsToShow");
-      for (int i = 1; i < rowsToShow; i++) {
+      for (int i = 1000; i < rowsToShow; i++) {
         String isbn = database[i][0].toString();
         String title = database[i][2].toString();
         String description = database[i][7].toString();
         String authors = database[i][4].toString();
-        double averageRating = database[i][9].toDouble(); // (data['averageRating'] ?? 0.0).toDouble()
+        double averageRating = database[i][9].toDouble();
         int publication_date = database[i][8];
         String bookImage = database[i][6].toString();
         String genres = database[i][5].toString();
