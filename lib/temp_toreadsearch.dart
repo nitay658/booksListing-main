@@ -110,8 +110,7 @@ class _SecondPageState extends State<SecondPage> {
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
-                        fontSize: 25.0))
-              ],
+                        fontSize: 25.0)),],
             ),
           ),
           AppBar(
@@ -130,6 +129,7 @@ class _SecondPageState extends State<SecondPage> {
             elevation: 0,
           ),
           _buildBookList(),
+
         ],
       ),
     );
@@ -164,7 +164,7 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildDataBaseContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 280,
+      height: MediaQuery.of(context).size.height - 260.0,
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF21BFBD),
           style: BorderStyle.solid,
@@ -184,7 +184,7 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildMyListContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 280.0,
+      height: MediaQuery.of(context).size.height - 260.0,
       decoration: BoxDecoration(border: Border.all(color: const Color(0xFF21BFBD),
         style: BorderStyle.solid,
         width: 1.0,),
@@ -339,7 +339,7 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildAddBookButton() {
     return Positioned(
-      bottom: 16.0,
+      //bottom: 10.0,
       left: 16.0,
       child: InkWell(
         onTap: () {
@@ -349,11 +349,10 @@ class _SecondPageState extends State<SecondPage> {
           padding: const EdgeInsets.all(10.0),
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.blue,
+            color: Color(0xFF21BFBD),
           ),
-          child: const Icon(
-            Icons.book_online,
-            color: Colors.white,
+          child: const IconButton(tooltip: 'Add favourites books',
+            color: Colors.white, onPressed: null, icon: Icon(Icons.add),
           ),
         ),
       ),
