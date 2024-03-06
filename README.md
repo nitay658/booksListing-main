@@ -28,4 +28,21 @@ To start discovering personalized book recommendations, simply:
 - Explore the database and add books to refine your recommendations.
 - Receive personalized book recommendations based on your preferences.
 
+
+## Next Asignments:
+User Preferences and Algorithm Customization:
+
+- Allow users to set preferences such as favorite genres, authors, or topics. These preferences can be used to customize the weighting of features in the KNN algorithm.
+- Implement a user interface where users can adjust weights for different features or parameters of the algorithm, providing them with more control over their recommendations.
+
+Search Section Improvements:
+
+- Enhance the search functionality to provide more intuitive and accurate results. Consider implementing features such as autocomplete suggestions, fuzzy search, or advanced filtering options.
+- Integrate natural language processing (NLP) techniques to improve the understanding of user queries and provide more relevant search results.
+  
+Algorithm Enhancement:
+
+- Continuously refine and optimize the KNN algorithm to improve recommendation accuracy and performance.
+- Experiment with different distance metrics, such as cosine similarity or Pearson correlation coefficient, to better capture the similarity between books and enhance the recommendation quality.
+
 Happy reading!
