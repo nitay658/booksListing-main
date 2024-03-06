@@ -45,4 +45,10 @@ Algorithm Enhancement:
 - Continuously refine and optimize the KNN algorithm to improve recommendation accuracy and performance.
 - Experiment with different distance metrics, such as cosine similarity or Pearson correlation coefficient, to better capture the similarity between books and enhance the recommendation quality.
 
+Review Submission Form:
+- Create a form where users can submit their reviews along with their personal text and ratings.
+
+Rating System: 
+- Implement a rating system (e.g., star ratings) to allow users to rate books on a scale from 1 to 5.
+
 Happy reading!
