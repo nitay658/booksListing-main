@@ -82,7 +82,7 @@ class _ThirdPageState extends State<ThirdPage> {
                     borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
                   ),
                   child: StreamBuilder<List<Book>>(
-                    stream: databaseService.getBooksRead(),
+                    stream: databaseService.getBooksToRead(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.active ||
                           snapshot.connectionState == ConnectionState.done) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:books_app/book_database.dart';
 
@@ -48,7 +49,10 @@ class _SecondPageState extends State<SecondPage> {
     String searchText = _textEditingController.text.toLowerCase();
 
     List<Book> localResults = _booksToRead
-        .where((book) => book.title.toLowerCase().contains(searchText))
+        .where((book) =>
+        book.title.toLowerCase().contains(searchText) ||
+        book.description.toLowerCase().contains(searchText) ||
+        book.authors.toLowerCase().contains(searchText))
         .toList();
 
     if (localResults.isEmpty) {
@@ -74,6 +78,7 @@ class _SecondPageState extends State<SecondPage> {
   _getToReadBooks() async {
     var lst = DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
     var allbookslst = DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
+    //DatabaseService.getInstance(userEmail: widget.userEmail).updateBooksCollection();
     allbookslst.listen((List<Book> run) { setState(() {
       _allBooks.addAll(run);
     });
@@ -228,7 +233,7 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   Widget _buildBookListItem(Book book,bool isFromDatabase) {
-    return Card(
+    return GestureDetector(onTap: (){_showReviewPopup(context, book);},child:Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 7),
       child: ListTile(
@@ -245,7 +250,7 @@ class _SecondPageState extends State<SecondPage> {
         subtitle: _buildBookSubtitle(book),
         trailing: _buildBookActions(book,isFromDatabase),
       ),
-    );
+    ));
   }
 
   Widget _buildBookSubtitle(Book book) {
@@ -317,6 +322,82 @@ class _SecondPageState extends State<SecondPage> {
       );
     }
   }
+
+  void _showReviewPopup(BuildContext context, Book book) {
+    TextEditingController reviewController = TextEditingController();
+    double rating = 0.0;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Review ${book.title}'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Write your review here:'),
+                TextField(
+                  controller: reviewController,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your review',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text('Rate the book:'),
+                // Add star rating widget
+                RatingBar.builder(
+                  initialRating: rating,
+                  minRating: 0,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemSize: 30,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (newRating) {
+                    rating = newRating;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Save the review
+                String review = reviewController.text;
+                if (review.isNotEmpty) {
+                  // Create UserReview object
+                  UserReview userReview = UserReview(
+                    userId: widget.userEmail, // Replace with actual user ID
+                    rating: rating,
+                    comment: review,
+                    timestamp: DateTime.now(),
+                  );
+                  DatabaseService.getInstance(userEmail: widget.userEmail).addReview(book.isbn, userReview);
+                  Navigator.of(context).pop();
+                } else {
+                  // Show error message or handle empty review
+                }
+              },
+              child: Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _addBookToList(Book book) {
     // Implement the logic to add the book to the user's personal list
