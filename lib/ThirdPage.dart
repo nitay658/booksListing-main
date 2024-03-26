@@ -166,29 +166,43 @@ class _ThirdPageState extends State<ThirdPage> {
   }
 
   void classifyReadBooks() {
-    var readBooksStream = databaseService.getBooksToRead();
-    var allBooksStream = databaseService.getAllBooks();
+    databaseService.getBooksToRead().listen(
+          (List<Book> run) {
+        if (_mounted) {
+          setState(() {
+            _booksToRead = run;
+            // Classify and update recommended books
+            _recommendedBooks = classifyAndRecommend();
+          });
+        }
+      },
+      onError: (error) {
+        // Handle error fetching read books, e.g., show a snackbar or log the error
+        print('Error fetching read books: $error');
+      },
+    );
 
-    readBooksStream.listen((List<Book> run) {
-      if (_mounted) {
-        setState(() {
-          _booksToRead = run;
-        });
-      }
-    });
-
-    allBooksStream.listen((List<Book> run) {
-      if (_mounted) {
-        setState(() {
-          _allBooks = run;
-          // Classify and update recommended books
-          _recommendedBooks = classifyAndRecommend();
-        });
-      }
-    });
+    databaseService.getAllBooks().listen(
+          (List<Book> run) {
+        if (_mounted) {
+          setState(() {
+            _allBooks = run;
+            // Classify and update recommended books
+            _recommendedBooks = classifyAndRecommend();
+          });
+        }
+      },
+      onError: (error) {
+        // Handle error fetching all books, e.g., show a snackbar or log the error
+        print('Error fetching all books: $error');
+      },
+    );
   }
 
+
   List<Pair<Book, Book>> classifyAndRecommend() {
+    print(_allBooks.length);
+    print(_booksToRead.length);
     KnnClassifier knnClassifier = KnnClassifier();
     return knnClassifier.classifyList(_allBooks, _booksToRead, 5);
   }

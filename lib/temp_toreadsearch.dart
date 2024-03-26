@@ -77,9 +77,8 @@ class _SecondPageState extends State<SecondPage> {
 
   _getToReadBooks() async {
     var lst = DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
-    var allbookslst = DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
-    //DatabaseService.getInstance(userEmail: widget.userEmail).updateBooksCollection();
-    allbookslst.listen((List<Book> run) { setState(() {
+    var allBooksList = DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
+    allBooksList.listen((List<Book> run) { setState(() {
       _allBooks.addAll(run);
     });
     });
