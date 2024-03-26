@@ -138,6 +138,7 @@ class _SecondPageState extends State<SecondPage> {
             elevation: 0,
           ),
           _buildBookList(),
+          //_buildAddBookButton(),
         ],
       ),
     );
@@ -164,7 +165,6 @@ class _SecondPageState extends State<SecondPage> {
           const SizedBox(height: 40.0),
           if (!_localResultsEmpty) _buildMyListContainer()
           else _buildDataBaseContainer(),
-          _buildAddBookButton(),
         ],
       ),
     );
@@ -343,8 +343,8 @@ class _SecondPageState extends State<SecondPage> {
   Widget _buildAddBookButton() {
     return Positioned(
       bottom: MediaQuery.of(context).padding.bottom + 16.0,
-      left: 16.0,
-      right: 16.0, // Ensure the button spans across the screen width
+      //left: 16.0,
+      //right: 32.0, // Ensure the button spans across the screen width
       child: Tooltip(
         message: 'Add Book',
         child: InkWell(
@@ -354,11 +354,11 @@ class _SecondPageState extends State<SecondPage> {
           child: Container(
             padding: const EdgeInsets.all(10.0),
             decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.blue,
+              shape: BoxShape.rectangle,
+              color: Colors.greenAccent,
             ),
             child: const Icon(
-              Icons.add_box_outlined,
+              Icons.bookmark_add,
               color: Colors.white,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:books_app/book_database.dart';
 
@@ -17,24 +18,23 @@ class SecondPage extends StatefulWidget {
 
 class _SecondPageState extends State<SecondPage> {
   List<Book> _booksToRead = [];
-  final List<Book> _allBooks = [];
+  late final List<Book> _allBooks = [];
   List<Book> searchResults = [];
-  late StreamController<List<Book>> _searchController =
-  BehaviorSubject<List<Book>>.seeded([]);
-  late StreamController<List<Book>> _databaseSearchController =
-  BehaviorSubject<List<Book>>.seeded([]);
-  late bool _localResultsEmpty = true;
-  final TextEditingController _textEditingController =
-  TextEditingController();
+  late StreamController<List<Book>> _searchController;
+  late StreamController<List<Book>> _databaseSearchController;
+  late bool _localResultsEmpty;
+
+  final TextEditingController _textEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchController = BehaviorSubject<List<Book>>.seeded([]);
+    _databaseSearchController = BehaviorSubject<List<Book>>.seeded([]);
+    _getToReadBooks();
+    _localResultsEmpty = false;
     _textEditingController.addListener(_onSearchTextChanged);
-    _getToReadBooks(); // Call the method to fetch books
   }
-
-
 
   @override
   void dispose() {
@@ -49,19 +49,25 @@ class _SecondPageState extends State<SecondPage> {
     String searchText = _textEditingController.text.toLowerCase();
 
     List<Book> localResults = _booksToRead
-        .where((book) => book.title.toLowerCase().contains(searchText))
+        .where((book) =>
+        book.title.toLowerCase().contains(searchText) ||
+        book.description.toLowerCase().contains(searchText) ||
+        book.authors.toLowerCase().contains(searchText))
         .toList();
+
     if (localResults.isEmpty) {
       // Fetch results from the database based on the search text
       List<Book> filteredDatabaseBooks = _allBooks
           .where((book) => book.title.toLowerCase().contains(searchText))
           .toList();
+      _localResultsEmpty = true;
       setState(() {
         searchResults = List.from(filteredDatabaseBooks);
         _databaseSearchController.add(searchResults);
       });
     } else {
       // Use local results if available
+      _localResultsEmpty = false;
       setState(() {
         searchResults = List.from(localResults);
         _searchController.add(searchResults);
@@ -70,24 +76,18 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   _getToReadBooks() async {
-    var lst =
-    DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
-    var allBooksList =
-    DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
-
-    // Listen for changes in the allbookslst stream
-    allBooksList.listen((List<Book> run) {
-      setState(() {
-        _allBooks.addAll(run);
-      });
+    var lst = DatabaseService.getInstance(userEmail: widget.userEmail).getBooksToRead();
+    var allBooksList = DatabaseService.getInstance(userEmail: widget.userEmail).getAllBooks();
+    allBooksList.listen((List<Book> run) { setState(() {
+      _allBooks.addAll(run);
     });
-
-    // Listen for changes in the lst stream
+    });
     lst.listen((List<Book> run) {
       setState(() {
-        _booksToRead = run; // Update _booksToRead directly
-        _localResultsEmpty = _booksToRead.isEmpty; // Update _localResultsEmpty
-        _onSearchTextChanged(); // Update search results
+        _booksToRead = [];
+        _booksToRead.addAll(run);
+        searchResults = List.from(_booksToRead);
+        _searchController.add(searchResults);
       });
     });
   }
@@ -96,72 +96,54 @@ class _SecondPageState extends State<SecondPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF21BFBD),
-      appBar: CupertinoNavigationBar(
-        middle: CupertinoSearchTextField(
-          backgroundColor: Colors.white,
-          controller: _textEditingController,
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 25.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 40.0),
-                child: Row(
-                  children: <Widget>[
-                    const Text(
-                      'Your',
-                      style: TextStyle(
+      body: ListView(
+        children: <Widget>[
+          const SizedBox(height: 25.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 40.0),
+            child: Row(
+              children: <Widget>[
+                Text('Your',
+                    style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 25.0,
-                      ),
-                    ),
-                    const SizedBox(width: 10.0),
-                    const Text(
-                      'Favourites Books',
-                      style: TextStyle(
+                        fontSize: 25.0)),
+                SizedBox(width: 10.0),
+                Text('Favourites Books',
+                    style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
-                        fontSize: 25.0,
-                      ),
-                    ),
-                    const SizedBox(width: 20.0),
-                    FloatingActionButton(onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddBookPage(
-                            userEmail: widget.userEmail,
-                          ),
-                        ),
-                      );
-                    },
-                      backgroundColor: Colors.cyan,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.bookmark_add),
-                    )
-                  ],
-                ),
-              ),
-              _buildBookList(),
-            ],
+                        fontSize: 25.0)),],
+            ),
           ),
-        ),
+          AppBar(
+            backgroundColor: const Color(0xFF21BFBD),
+            title: CupertinoSearchTextField(
+              backgroundColor: Colors.white,
+              controller: _textEditingController,
+              onChanged: (text) => _onSearchTextChanged(),
+            ),
+            titleTextStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            centerTitle: true,
+            elevation: 0,
+          ),
+          _buildBookList(),
+
+        ],
       ),
     );
   }
-
 
   Widget _buildBookList() {
     return Container(
       margin: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF21BFBD),
         borderRadius: BorderRadius.circular(15.0),
         boxShadow: [
           BoxShadow(
@@ -172,23 +154,27 @@ class _SecondPageState extends State<SecondPage> {
           ),
         ],
       ),
-      child: Stack(
+      child: Column(children: <Widget>[Stack(
         alignment: Alignment.bottomLeft,
         children: [
           //const SizedBox(height: 40.0),
           if (!_localResultsEmpty) _buildMyListContainer()
           else _buildDataBaseContainer(),
+          _buildAddBookButton(),
         ],
-      ),
+      )],),
     );
   }
 
   Widget _buildDataBaseContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 185.0,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
+      height: MediaQuery.of(context).size.height - 260.0,
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF21BFBD),
+          style: BorderStyle.solid,
+          width: 1.0,),
+        color: Colors.grey,
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(75.0)),
       ),
       child: StreamBuilder<List<Book>>(
         stream: _databaseSearchController.stream,
@@ -202,10 +188,12 @@ class _SecondPageState extends State<SecondPage> {
 
   Widget _buildMyListContainer() {
     return Container(
-      height: MediaQuery.of(context).size.height - 185.0,
-      decoration: const BoxDecoration(
+      height: MediaQuery.of(context).size.height - 260.0,
+      decoration: BoxDecoration(border: Border.all(color: const Color(0xFF21BFBD),
+        style: BorderStyle.solid,
+        width: 1.0,),
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(75.0)),
       ),
       child: StreamBuilder<List<Book>>(
         stream: _searchController.stream,
@@ -244,7 +232,7 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   Widget _buildBookListItem(Book book,bool isFromDatabase) {
-    return Card(
+    return GestureDetector(onTap: (){_showReviewPopup(context, book);},child:Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 7),
       child: ListTile(
@@ -261,7 +249,7 @@ class _SecondPageState extends State<SecondPage> {
         subtitle: _buildBookSubtitle(book),
         trailing: _buildBookActions(book,isFromDatabase),
       ),
-    );
+    ));
   }
 
   Widget _buildBookSubtitle(Book book) {
@@ -329,15 +317,155 @@ class _SecondPageState extends State<SecondPage> {
               _showBookDescriptionDialog(book);
             },
           ),
-        ],
+          if(book.userReviews.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.reviews_outlined),
+              tooltip: 'Reviews',
+              onPressed: () {
+                _showBookReviewsDialog(book);
+              },
+            ),
+          ],
       );
     }
   }
+
+  void _showBookReviewsDialog(Book book) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Reviews for ${book.title}'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              for (UserReview review in book.userReviews)
+                ListTile(
+                  title: Row(
+                    children: [
+                      const Text('Rating:'),
+                      RatingBarIndicator(
+                        rating: review.rating,
+                        itemBuilder: (context, index) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        itemCount: 5,
+                        itemSize: 20.0,
+                        unratedColor: Colors.grey[300],
+                        direction: Axis.horizontal,
+                      ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Comment: ${review.comment}'),
+                      Text('User: ${review.userId}'),
+                      Text('Date: ${review.timestamp}'),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          actions: <Widget>[
+            // Close the dialog with an action button
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void _showReviewPopup(BuildContext context, Book book) {
+    TextEditingController reviewController = TextEditingController();
+    double rating = 0.0;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Review ${book.title}'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Write your review here:'),
+                TextField(
+                  controller: reviewController,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your review',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text('Rate the book:'),
+                // Add star rating widget
+                RatingBar.builder(
+                  initialRating: rating,
+                  minRating: 0,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemSize: 30,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (newRating) {
+                    rating = newRating;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Save the review
+                String review = reviewController.text;
+                if (review.isNotEmpty) {
+                  // Create UserReview object
+                  UserReview userReview = UserReview(
+                    userId: widget.userEmail, // Replace with actual user ID
+                    rating: rating,
+                    comment: review,
+                    timestamp: DateTime.now(),
+                  );
+                  book.addUserReview(userReview);
+                  DatabaseService.getInstance(userEmail: widget.userEmail).addReview(book.isbn, userReview);
+                  Navigator.of(context).pop();
+                } else {
+                  // Show error message or handle empty review
+                }
+              },
+              child: Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _addBookToList(Book book) {
     // Implement the logic to add the book to the user's personal list
     // You can call DatabaseServer.addUserBook(book) or any other relevant method
     DatabaseService.getInstance(userEmail: widget.userEmail).addUserBook(book);
+
     // Optionally, you can update the local state to reflect the change
     setState(() {
       _booksToRead.add(book);
@@ -350,6 +478,39 @@ class _SecondPageState extends State<SecondPage> {
       _booksToRead.remove(book);
       DatabaseService.getInstance(userEmail: widget.userEmail).removeUserBook(book);
     });
+  }
+
+  Widget _buildAddBookButton() {
+    return Positioned(
+      //bottom: 10.0,
+      left: 16.0,
+      child: InkWell(
+        onTap: () {
+          _navigateToAddBookPage();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10.0),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Color(0xFF21BFBD),
+          ),
+          child: const IconButton(tooltip: 'Add favourites books',
+            color: Colors.white, onPressed: null, icon: Icon(Icons.add),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAddBookPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddBookPage(
+          userEmail: widget.userEmail,
+        ),
+      ),
+    );
   }
 
   void _showBookDescriptionDialog(Book book) {
@@ -382,7 +543,7 @@ class _SecondPageState extends State<SecondPage> {
     } else {
       return Image.asset(
         "assets/images/placeholder_image.jpg",
-      ); // Replace with your placeholder image asset
+      );
     }
   }
 
