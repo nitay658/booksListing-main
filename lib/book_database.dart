@@ -12,7 +12,7 @@ class Book {
   final String genres;
   final int publication_date;
   final String bookImage;
-  //final String url;
+  List<UserReview> userReviews;
 
   Book({
     required this.isbn,
@@ -24,15 +24,17 @@ class Book {
     required this.publication_date,
     required this.bookImage,
     required this.genres,
-    //required this.url
-  });
     List<UserReview>? userReviews, // Initialize with an empty list by default
   }) : this.userReviews = userReviews ?? [];
 
   factory Book.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
+    // Deserialize user reviews from the document data
+    List<dynamic> reviewData = data['userReviews'] ?? [];
+    List<UserReview> userReviews = reviewData.map((review) => UserReview.fromMap(review)).toList();
+
     return Book(
-      isbn: data['isbn'] ?? '', // Add the ISBN field if it's part of your data
+      isbn: data['isbn'] ?? '',
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       authors: data['authors'] ?? '',
@@ -41,7 +43,7 @@ class Book {
       publication_date: data['publication_date'] ?? 0,
       bookImage: data['bookImage'] ?? '',
       genres: data['genres'] ?? '',
-      //url: data['url'] ?? '',
+      userReviews: userReviews,
     );
   }
 
@@ -56,7 +58,6 @@ class Book {
       'genres': genres,
       'publication_date': publication_date,
       'bookImage': bookImage,
-      //'url': url,
     };
   }
 
@@ -71,8 +72,10 @@ class Book {
       genres: "",
       publication_date: 1950,
       bookImage: '',
-      //url: '',
     );
+  }
+  void addUserReview(UserReview review) {
+    userReviews.add(review);
   }
 }
 
@@ -323,7 +326,7 @@ class UserReview {
       userId: map['userId'],
       rating: map['rating'],
       comment: map['comment'],
-      timestamp: DateTime.parse(map['timestamp']),
+      timestamp: (map['timestamp'] as Timestamp).toDate(), // Convert Timestamp to DateTime
     );
   }
 }
