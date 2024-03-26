@@ -317,9 +317,70 @@ class _SecondPageState extends State<SecondPage> {
               _showBookDescriptionDialog(book);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.reviews_outlined),
+            tooltip: 'Reviews',
+            onPressed: () {
+              _showBookReviewsDialog(book);
+            },
+          ),
         ],
       );
     }
+  }
+
+  void _showBookReviewsDialog(Book book) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Reviews for ${book.title}'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              // Iterate over the book's reviews and display each one
+              for (UserReview review in book.userReviews)
+                ListTile(
+                  title: Row(
+                    children: [
+                      Text('Rating: '),
+                      RatingBarIndicator(
+                        rating: review.rating,
+                        itemBuilder: (context, index) => Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        itemCount: 5,
+                        itemSize: 20.0,
+                        unratedColor: Colors.grey[300],
+                        direction: Axis.horizontal,
+                      ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Comment: ${review.comment}'),
+                      Text('User: ${review.userId}'),
+                      Text('Date: ${review.timestamp}'),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          actions: <Widget>[
+            // Close the dialog with an action button
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showReviewPopup(BuildContext context, Book book) {
@@ -377,6 +438,7 @@ class _SecondPageState extends State<SecondPage> {
                     comment: review,
                     timestamp: DateTime.now(),
                   );
+                  book.addUserReview(userReview);
                   DatabaseService.getInstance(userEmail: widget.userEmail).addReview(book.isbn, userReview);
                   Navigator.of(context).pop();
                 } else {

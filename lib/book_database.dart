@@ -26,6 +26,8 @@ class Book {
     required this.genres,
     //required this.url
   });
+    List<UserReview>? userReviews, // Initialize with an empty list by default
+  }) : this.userReviews = userReviews ?? [];
 
   factory Book.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
