@@ -317,14 +317,15 @@ class _SecondPageState extends State<SecondPage> {
               _showBookDescriptionDialog(book);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.reviews_outlined),
-            tooltip: 'Reviews',
-            onPressed: () {
-              _showBookReviewsDialog(book);
-            },
-          ),
-        ],
+          if(book.userReviews.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.reviews_outlined),
+              tooltip: 'Reviews',
+              onPressed: () {
+                _showBookReviewsDialog(book);
+              },
+            ),
+          ],
       );
     }
   }
@@ -339,15 +340,14 @@ class _SecondPageState extends State<SecondPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              // Iterate over the book's reviews and display each one
               for (UserReview review in book.userReviews)
                 ListTile(
                   title: Row(
                     children: [
-                      Text('Rating: '),
+                      const Text('Rating:'),
                       RatingBarIndicator(
                         rating: review.rating,
-                        itemBuilder: (context, index) => Icon(
+                        itemBuilder: (context, index) => const Icon(
                           Icons.star,
                           color: Colors.amber,
                         ),
@@ -382,6 +382,7 @@ class _SecondPageState extends State<SecondPage> {
       },
     );
   }
+
 
   void _showReviewPopup(BuildContext context, Book book) {
     TextEditingController reviewController = TextEditingController();
